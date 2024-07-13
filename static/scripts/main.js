@@ -3,7 +3,7 @@
 ***********************************/
 
 var socket = io();
-var TURN_MAX_MILISECONDS = 3 * 60 * 1000;
+var TURN_MAX_MILISECONDS = 3 * 60 * 1000; // todo
 var board = null
 var gameId = null;
 var player = {};
@@ -31,7 +31,7 @@ function joinGame() {
   socket.emit('joinGame', joinGameReq );
 }
 function startGame() {
-  socket.emit('startGame', gameId );
+  socket.emit('startGame', '' );
 }
 function groupVote() {
   socket.emit('groupElections', 'requested' );
@@ -70,21 +70,22 @@ function onDrop (source, target) {
 /**********************************
      WebSocket event listeners
 ***********************************/
-socket.on('createGame', function(msg) {
+socket.on('createGame', function(gameId) {
     $('#publicMainLobby').hide();
     $('#publicWaitForStart').show();
-    $('.gameId').html(msg);
-    gameId = msg;
+    $('.gameId').html(gameId);
 });
-socket.on('joinGame', function(msg) {
-  if (msg == 'notfound') {
+socket.on('joinGame', function(players) {
+  if (players === 'notfound') {
     $('#privateJoinGameNotFound').show();
     $('#privateJoinGameNotFound').hide(2000);
     return;
   }
   $('#privateJoinGame').hide();
   $('#privateWaitForStart').show();
-  $('.gameId').html(msg);
+  for (pl of players) {
+    showJoinedPlayer(pl);
+  }
   gameId = msg;
 });
 socket.on('youAre', function(msg) {
@@ -115,6 +116,7 @@ socket.on('startGame', function(fen) {
     }
     board = Chessboard('privateBoard', config);
     $('#privateStatus_'+player['color']).show();
+    $('.players_' + (player['color']=='b'?'w':'b')).hide();
     canVote = game_turn == player['color'];
   }
 });
@@ -136,7 +138,6 @@ socket.on('groupElectedMove', function(elected) {
   }
   board.position(elected.move.after);
   canVote = !publicScreen && (game_turn == player['color']);
-  setTimeout(()=>socket.emit('groupElections','turnTimeout'), TURN_MAX_MILISECONDS);
 
 });
 socket.on('endGame', function(reason) {
@@ -147,7 +148,13 @@ socket.on('endGame', function(reason) {
   $('.game_end_reason').text(reason);
 });
 
-
+socket.on('playerJoined', function(playerJoined) {
+  showJoinedPlayer(playerJoined);
+});
+function showJoinedPlayer(playerJoined) {
+  var playerJoined_html = `<span class="player">${playerJoined.name}</span>`;
+  $('.players_' + playerJoined.color).append(playerJoined_html);
+}
 
 /**********************************
      debugger

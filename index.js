@@ -47,6 +47,7 @@ io.on('connection', (socket) => {
           socket.emit('startGame', 'notfound');
           return;
       }
+      gameOf(socket).state = 'started';
       console.log('game start: ' + gameId);
       io.to(gameId).emit('startGame', chessOf(socket).fen());
     });
@@ -81,6 +82,7 @@ io.on('connection', (socket) => {
       gameOf(socket).votes = [];
       io.to(gameId).emit('groupElectedMove', elected);
       if (game.isGameOver()) {
+        gameOf(socket).state = 'ended';
         io.to(gameId).emit('endGame', endGameReason(game));
       }
     });

@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <title>chessboardjs Example #5000 - Only Allow Legal Moves</title>
-  <base href="../" />
+  <title>Group Chess</title>
+  <link rel="stylesheet" href="css/vendor/bootstrap.css" >
   <link rel="stylesheet" href="css/vendor/chessboard-1.0.0.min.css" >
   <link rel="stylesheet" href="css/main.css" >
   <script src="scripts/vendor/jquery-3.7.1.min.js"></script>
@@ -25,16 +25,16 @@
 
   <!-- Private: Join a game -->
   <div id="privateJoinGame" style="display:none">
-  My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGame()">Lets Go!</a>
-  <br/>
-  <span id="privateJoinGameNotFound" style="display: none;">Game id not found</span>
+    My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGame()">Lets Go!</a>
+    <br/>
+    <span id="privateJoinGameNotFound" style="display: none;">Game id not found</span>
   </div>
 
   <!-- Private: Joined, waiting to start -->
   <div id="privateWaitForStart" style="display:none">
-    Waiting for game <span class="gameId"></span> to start</div>
+    Waiting for game <span class="gameId"></span> to start
     <br/>
-    <div id="privatePlayersJoining"></div>
+    <div id="privatePlayersJoining"><div class="players_w"></div><div class="players_b"></div></div>
   </div>
 
 
@@ -58,33 +58,35 @@
       <span class="turn_of_w">Wait for whites to play...</span>
     </div>
     <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>
+    <div id="privatePlayers"><div class="players_w"></div><div class="players_b"></div></div>
   </div>
 
 
 
   <!-- Public: Wait for game to start -->
   <div id="publicWaitForStart" style="display:none">
-    Waiting for game <span class="gameId"></span> to start
+    <h2>Waiting for players to join game <span class="gameId"></span></h2>
     <br />
-    <div id="publicPlayersJoining"></div>
+    <div id="publicPlayersJoining"><div class="players_w"></div><div class="players_b"></div></div>
     <a href="javascript:void(0);" onclick="startGame()">Start Game!!</a>
   </div> 
   
   <!-- Public: Game screen -->
   <div id="publicGameRoom" style="display:none">
+    <h2>Game <span class="gameId"></span></h2>
     <div id="publicBoard" style="width: 400px"></div>
     <div id="publicStatus">
       <span class="turn_of_w">Team White plays now</span>
       <span class="turn_of_b">Team Black plays now</span>
       <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>
     </div>
-    <div id="publicPlayers"></div>
+    <div id="publicPlayers"><div class="players_w"></div><div class="players_b"></div></div>
   </div>
 
 
   <!-- debugging: show WS chatter -->
 <hr/>
-  <a href="javscript:void(0)" onclick="$('#debugger').toggle()">Toggle debugger</a>
+  <a href="javascript:void(0)" onclick="$('#debugger').toggle()">Toggle debugger</a>
   <div id="debugger">
 
 </div>
