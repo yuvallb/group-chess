@@ -1,0 +1,86 @@
+
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>chessboardjs Example #5000 - Only Allow Legal Moves</title>
+  <base href="../" />
+  <link rel="stylesheet" href="css/vendor/chessboard-1.0.0.min.css" >
+  <link rel="stylesheet" href="css/main.css" >
+  <script src="scripts/vendor/jquery-3.7.1.min.js"></script>
+  <script src="scripts/vendor/chessboard-1.0.0.min.js" ></script>
+  <script src="scripts/vendor/chess.js" ></script>
+  <script src="scripts/vendor/socket.io.min.js"></script>
+</head>
+<body>
+
+  <!-- Public Main Lobby: start or join -->
+  <div id="publicMainLobby">
+    <a href="javascript:void(0)" onclick="startNewGame()">Start a new group chess game</a> or 
+    <a href="javascript:void(0)" onclick="requestJoinGame()">join an existing game</a>
+  </div>
+
+
+  <!-- Private: Join a game -->
+  <div id="privateJoinGame" style="display:none">
+  My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGame()">Lets Go!</a>
+  <br/>
+  <span id="privateJoinGameNotFound" style="display: none;">Game id not found</span>
+  </div>
+
+  <!-- Private: Joined, waiting to start -->
+  <div id="privateWaitForStart" style="display:none">
+    Waiting for game <span class="gameId"></span> to start</div>
+    <br/>
+    <div id="privatePlayersJoining"></div>
+  </div>
+
+
+   <!-- Private: game room -->
+  <div id="privateGameRoom" style="display:none">
+    <div id="privateBoard" style="width: 400px"></div>
+    <div id="privateStatus_w" style="display:none">
+      <span class="turn_of_w">Your team is now playing</span>
+      <span class="turn_of_b">Wait for blacks to play...</span>
+    </div>
+    <div id="privateStatus_b" style="display:none">
+      <span class="turn_of_b">Your team is now playing</span>
+      <span class="turn_of_w">Wait for whites to play...</span>
+    </div>
+    <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>
+  </div>
+
+
+
+  <!-- Public: Wait for game to start -->
+  <div id="publicWaitForStart" style="display:none">
+    Waiting for game <span class="gameId"></span> to start
+    <br />
+    <div id="publicPlayersJoining"></div>
+    <a href="javascript:void(0);" onclick="startGame()">Start Game!!</a>
+  </div> 
+  
+  <!-- Public: Game screen -->
+  <div id="publicGameRoom" style="display:none">
+    <div id="publicBoard" style="width: 400px"></div>
+    <div id="publicStatus">
+      <span class="turn_of_w">Team White plays now</span>
+      <span class="turn_of_b">Team Black plays now</span>
+      <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>
+    </div>
+    <div id="publicPlayers"></div>
+  </div>
+
+
+  <!-- debugging: show WS chatter -->
+<hr/>
+  <a href="javscript:void(0)" onclick="$('#debugger').toggle()">Toggle debugger</a>
+  <div id="debugger">
+
+</div>
+
+<script src="scripts/main.js"></script>
+
+</body>
+</html>
