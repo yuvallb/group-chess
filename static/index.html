@@ -12,6 +12,7 @@
   <script src="scripts/vendor/chessboard-1.0.0.min.js" ></script>
   <script src="scripts/vendor/chess.js" ></script>
   <script src="scripts/vendor/socket.io.min.js"></script>
+  <script src="scripts/vendor/DragDropTouch.js"></script>
 </head>
 <body>
 
@@ -41,11 +42,19 @@
   <div id="privateGameRoom" style="display:none">
     <div id="privateBoard" style="width: 400px"></div>
     <div id="privateStatus_w" style="display:none">
-      <span class="turn_of_w">Your team is now playing</span>
+      <span class="turn_of_w">
+        Your group is now playing
+        <br/>
+        <a href="javascript:void(0);" onclick="groupVote()">We're done - lets move!</a>
+      </span>
       <span class="turn_of_b">Wait for blacks to play...</span>
     </div>
     <div id="privateStatus_b" style="display:none">
-      <span class="turn_of_b">Your team is now playing</span>
+      <span class="turn_of_b">
+        Your group is now playing
+        <br/>
+        <a href="javascript:void(0);" onclick="groupVote()">We're done - lets move!</a>
+      </span>
       <span class="turn_of_w">Wait for whites to play...</span>
     </div>
     <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>

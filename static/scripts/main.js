@@ -8,11 +8,8 @@ var board = null
 var gameId = null;
 var player = {};
 var publicScreen = true;
-//var game = new Chess()
+var canVote = false;
 var game_turn = '';
-var $status = $('#status')
-var $fen = $('#fen')
-var $pgn = $('#pgn')
 
 
 
@@ -35,22 +32,21 @@ function joinGame() {
 }
 function startGame() {
   socket.emit('startGame', gameId );
-
 }
+function groupVote() {
+  socket.emit('groupElections', 'requested' );
+}
+
+
 
 /**********************************
      UI event listeners
 ***********************************/
 
 function onDragStart (source, piece, position, orientation) {
-  // do not pick up pieces if the game is over
-  //if (game.game_over()) return false
-
-  // only pick up pieces for the side to move
-//   if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-//       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-//     return false
-//   }
+  if (!canVote) { 
+    return false;
+  }
   if ((game_turn === 'w' && piece.search(/^b/) !== -1) ||
       (game_turn === 'b' && piece.search(/^w/) !== -1)) {
     return false
@@ -61,10 +57,11 @@ function onDrop (source, target) {
   if (game_turn != player.color) { 
     return 'snapback';
   }
-  socket.emit('moveRequest', {
+  socket.emit('voteOnMove', {
     from: source,
     to: target
   });
+  canVote = false;
 }
 
 
@@ -93,7 +90,7 @@ socket.on('joinGame', function(msg) {
 socket.on('youAre', function(msg) {
   player = msg;
 });
-socket.on('startGame', function(msg) {
+socket.on('startGame', function(fen) {
   $('#privateWaitForStart').hide();
   $('#publicWaitForStart').hide();
   $('.turn_of_b').hide();
@@ -103,7 +100,7 @@ socket.on('startGame', function(msg) {
     $('#publicGameRoom').show();
     var config = {
       draggable: false,
-      position: 'start'
+      position: fen
     }
     board = Chessboard('publicBoard', config);
   } else {
@@ -111,23 +108,24 @@ socket.on('startGame', function(msg) {
     var config = {
       orientation: player['color'] == 'b' ? 'black' : 'white',
       draggable: true,
-      position: 'start',
+      position: fen,
       onDragStart: onDragStart,
       onDrop: onDrop
       //,onSnapEnd: onSnapEnd
     }
     board = Chessboard('privateBoard', config);
     $('#privateStatus_'+player['color']).show();
+    canVote = game_turn == player['color'];
   }
 });
-socket.on('moveRequestDenied', function(moveReq) {
+socket.on('voteOnMoveDenied', function(moveReq) {
   // if this is a private screen and my move and it is not valid - snap back
   board.position(moveReq.validBoard)
+  canVote = game_turn == player['color'];
 });
-socket.on('playerMoved', function(moveReq) {
-// this should be "groupMoved":
-  board.move(`${moveReq.move.from}-${moveReq.move.to}`)
-  if (moveReq.move.color == 'w') {
+socket.on('groupElectedMove', function(elected) {
+  board.position(elected.move.after)
+  if (elected.move.color == 'w') {
     game_turn = 'b';
     $('.turn_of_w').hide();
     $('.turn_of_b').show();
@@ -136,24 +134,10 @@ socket.on('playerMoved', function(moveReq) {
     $('.turn_of_b').hide();
     $('.turn_of_w').show();
   }
-  // on public screen:
-  //    show that player voted
-  //    
-  // on private screen:
-  //    draw small board after move
-  // 
-});
-socket.on('nextTurn', function(msg) {
-  
-  // on public screen:
-  //    update board and status
-  //    start timer
-  setTimeout(()=>socket.emit('turnTimeout','turnTimeout'), TURN_MAX_MILISECONDS);
-  //
-  // on private screen:
-  //    update board and status
-  //    if this is the players turn : allow moving
-  // 
+  board.position(elected.move.after);
+  canVote = !publicScreen && (game_turn == player['color']);
+  setTimeout(()=>socket.emit('groupElections','turnTimeout'), TURN_MAX_MILISECONDS);
+
 });
 socket.on('endGame', function(reason) {
   game_turn = '';
@@ -162,7 +146,12 @@ socket.on('endGame', function(reason) {
   $('.game_ended').show();
   $('.game_end_reason').text(reason);
 });
-  
+
+
+
+/**********************************
+     debugger
+***********************************/
 socket.on("connect", () => {
   const engine = socket.io.engine;
   engine.on("packet", ({ type, data }) => {
@@ -174,48 +163,5 @@ socket.on("connect", () => {
     $("#debugger").prepend("<span class='packet'>Sending: "+type+(data?(': '+ data):'')+'</span>');
   });
 });
-/**********************************
-     logic
-***********************************/
-
-function updateStatus () {
-  var status = ''
-
-  var moveColor = 'White'
-  if (game.turn() === 'b') {
-    moveColor = 'Black'
-  }
-
-  // checkmate?
-  if (game.in_checkmate()) {
-    status = 'Game over, ' + moveColor + ' is in checkmate.'
-  }
-
-  // draw?
-  else if (game.in_draw()) {
-    status = 'Game over, drawn position'
-  }
-
-  // game still on
-  else {
-    status = moveColor + ' to move'
-
-    // check?
-    if (game.in_check()) {
-      status += ', ' + moveColor + ' is in check'
-    }
-  }
-  $status.html(status)
-  $fen.html(game.fen())
-  $pgn.html(game.pgn())
-}
-
-
-
-
-/**********************************
-     Activate board - remove from here, should be "on demand"
-***********************************/
-
 
 
