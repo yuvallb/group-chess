@@ -43,6 +43,11 @@ span.packet {
     background-color: #444;
     color: #fff;
 }
+.voted {
+    background-image: url(/img/checkmark.svg);
+    background-repeat: no-repeat;
+    background-size: 15px;
+}
 input {
     width: 70px;
 }

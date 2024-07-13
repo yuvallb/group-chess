@@ -17,21 +17,21 @@ var game_turn = '';
      Button actions
 ***********************************/
 
-function requestJoinGame() {
+function joinGameForm() {
   $('#publicMainLobby').hide();
   $('#privateJoinGame').show();
 }
-function startNewGame() {
+function createGameRequest() {
   publicScreen = true;
-  socket.emit('createGame', 'createGame');
+  socket.emit('createGameRequest', 'createGame');
 }
-function joinGame() {
+function joinGameRequest() {
   publicScreen = false;
   var joinGameReq = {gameId: $('#join_game_id').val(), playerName: $('#join_player_name').val()};
-  socket.emit('joinGame', joinGameReq );
+  socket.emit('joinGameRequest', joinGameReq );
 }
-function startGame() {
-  socket.emit('startGame', '' );
+function startGameRequest() {
+  socket.emit('startGameRequest', '' );
 }
 function groupVote() {
   socket.emit('groupElections', 'requested' );
@@ -70,18 +70,13 @@ function onDrop (source, target) {
 /**********************************
      WebSocket event listeners
 ***********************************/
-socket.on('createGame', function(gameId) {
+socket.on('createGame', function(gId) {
+  gameId = gId;
     $('#publicMainLobby').hide();
     $('#publicWaitForStart').show();
     $('.gameId').html(gameId);
-    new QRCode(document.getElementById("qrcode"), {
-      text: window.location + '#' + gameId,
-      width: 128,
-      height: 128,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+    showQrCode("qrcode", gameId);
+    showQrCode("qrcode2", gameId);
 });
 socket.on('joinGame', function(players) {
   if (players === 'notfound') {
@@ -94,18 +89,20 @@ socket.on('joinGame', function(players) {
   for (pl of players) {
     showJoinedPlayer(pl);
   }
-  gameId = msg;
+});
+socket.on('youAreGameId', function(gId) {
+  gameId = gId;
   $('.gameId').html(gameId);
 });
-socket.on('youAre', function(msg) {
-  player = msg;
+socket.on('youArePlayer', function(pl) {
+  player = pl;
 });
 socket.on('startGame', function(fen) {
   $('#privateWaitForStart').hide();
   $('#publicWaitForStart').hide();
-  $('.turn_of_b').hide();
-  $('.turn_of_w').show();
-  game_turn = 'w';
+  game_turn = turnOf(fen); // game can start in b if joining in the middle
+  $('.turn_of_'+otherColor(game_turn)).hide();
+  $('.turn_of_'+game_turn).show();
   if (publicScreen) {
     $('#publicGameRoom').show();
     var config = {
@@ -113,6 +110,7 @@ socket.on('startGame', function(fen) {
       position: fen
     }
     board = Chessboard('publicBoard', config);
+    $("#refreshPublicLink").attr("href", "#public" + gameId);
   } else {
     $('#privateGameRoom').show();
     var config = {
@@ -121,18 +119,19 @@ socket.on('startGame', function(fen) {
       position: fen,
       onDragStart: onDragStart,
       onDrop: onDrop
-      //,onSnapEnd: onSnapEnd
     }
     board = Chessboard('privateBoard', config);
-    $('#privateStatus_'+player['color']).show();
-    $('.players_' + (player['color']=='b'?'w':'b')).hide();
+    $('#privateStatus_' + player['color']).show();
+    $('.players_' + otherColor(player['color'])).hide();
     canVote = game_turn == player['color'];
   }
 });
 socket.on('voteOnMoveDenied', function(moveReq) {
-  // if this is a private screen and my move and it is not valid - snap back
   board.position(moveReq.validBoard)
   canVote = game_turn == player['color'];
+});
+socket.on('playerVoted', function(vote) {
+  $('.'+vote.player).addClass('voted');
 });
 socket.on('groupElectedMove', function(elected) {
   board.position(elected.move.after)
@@ -146,6 +145,7 @@ socket.on('groupElectedMove', function(elected) {
     $('.turn_of_w').show();
   }
   board.position(elected.move.after);
+  $('.voted').removeClass('voted');
   canVote = !publicScreen && (game_turn == player['color']);
 
 });
@@ -161,9 +161,26 @@ socket.on('playerJoined', function(playerJoined) {
   showJoinedPlayer(playerJoined);
 });
 function showJoinedPlayer(playerJoined) {
-  var playerJoined_html = `<span class="player">${playerJoined.name}</span>`;
+  var playerJoined_html = `<span class="player ${playerJoined.playerId}">${playerJoined.name}</span>`;
   $('.players_' + playerJoined.color).append(playerJoined_html);
 }
+function turnOf(fen) {
+  return fen.split(' ')[1];
+}
+function otherColor(c) {
+  return c=='b'?'w':'b';
+}
+function showQrCode(eId, gId) {
+  new QRCode(eId, {
+    text: window.location.href.split('#')[0] + '#' + gId,
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  });
+}
+
 
 /**********************************
      debugger
@@ -186,7 +203,19 @@ socket.on("connect", () => {
 ***********************************/
 
 if (window.location.hash) {
-  $('#publicMainLobby').hide();
-  $('#privateJoinGame').show();
-  $('#join_game_id').val(window.location.hash.replace('#',''))
+  if (window.location.hash.indexOf('public')>-1) {
+    publicScreen = true;
+    gameId = window.location.hash.replace('#','').replace('public','');
+    $('#publicMainLobby').hide();
+    $('.gameId').html(gameId);
+    showQrCode("qrcode", gameId);
+    showQrCode("qrcode2", gameId);
+    socket.emit('startGameRequest', gameId);  
+  } else {
+    publicScreen = false;
+    gameId = window.location.hash.replace('#','');
+    $('#publicMainLobby').hide();
+    $('#privateJoinGame').show();
+    $('#join_game_id').val(gameId);
+  }
 }

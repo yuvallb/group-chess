@@ -15,14 +15,14 @@ var games = {};
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    socket.on('createGame', () => {
+    socket.on('createGameRequest', () => {
         var gameId = (Math.round(Math.random()*100000)).toString();
         games[gameId] = {players: [], votes: [], state: 'pending', chess: new Chess()};
         console.log('createGame: ' + gameId);
         socket.emit('createGame', gameId)
         socket.join(gameId);
     });
-    socket.on('joinGame', (joinReq) => {
+    socket.on('joinGameRequest', (joinReq) => {
         var gameId = joinReq.gameId;
         if (!(gameId in games)) {
             socket.emit('joinGame', 'notfound');
@@ -32,7 +32,8 @@ io.on('connection', (socket) => {
         socket.emit('joinGame', games[gameId].players);
         var playerId = playerIdOf(socket);
         var player = {playerId: playerId, name: joinReq.playerName, color: nextColor(games[gameId].players.length)};
-        socket.emit('youAre', player);
+        socket.emit('youAreGameId', gameId);
+        socket.emit('youArePlayer', player);
         games[gameId].players.push(player);
         socket.join(gameId);
         io.to(gameId).emit('playerJoined', player);
@@ -40,8 +41,11 @@ io.on('connection', (socket) => {
           io.to(gameId).emit('startGame', chessOf(socket).fen());
         }
     });
-    socket.on('startGame', () => {
+    socket.on('startGameRequest', (requestedGameId) => {
       console.log('startGame');
+      if (requestedGameId) {
+        socket.join(requestedGameId);
+      }
       var gameId = gameIdOf(socket);
       if (!(gameId in games)) {
           socket.emit('startGame', 'notfound');
@@ -124,7 +128,7 @@ function endGameReason(game) {
 }
 function majorityVotes(sc) {
   var votes = gameOf(sc).votes; 
-  if (votes.length == 0) { return {move: chessOf(sc).moves()[0], decidingPlayers: ['random']}; } // pick the first legal move, assumes not isGameOver
+  if (votes.length == 0) { return {move: chessOf(sc).moves({verbose:true})[0], decidingPlayers: ['random']}; } // pick the first legal move, assumes not isGameOver
   var elections = {};
   var electedMoves = {};
   for (var vote of votes) {

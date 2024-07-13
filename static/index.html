@@ -19,14 +19,18 @@
 
   <!-- Public Main Lobby: start or join -->
   <div id="publicMainLobby">
-    <a href="javascript:void(0)" onclick="startNewGame()">Start a new group chess game</a> or 
-    <a href="javascript:void(0)" onclick="requestJoinGame()">join an existing game</a>
+    <h3>
+      <a href="javascript:void(0)" onclick="createGameRequest()">Start a new group chess game</a> 
+    </h3> or
+    <h3>
+      <a href="javascript:void(0)" onclick="joinGameForm()">join an existing game</a>
+    </h3>
   </div>
 
 
   <!-- Private: Join a game -->
   <div id="privateJoinGame" style="display:none">
-    My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGame()">Lets Go!</a>
+    My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGameRequest()">Lets Go!</a>
     <br/>
     <span id="privateJoinGameNotFound" style="display: none;">Game id not found</span>
   </div>
@@ -66,12 +70,14 @@
 
   <!-- Public: Wait for game to start -->
   <div id="publicWaitForStart" style="display:none">
-    <h2>Waiting for players to join game <span class="gameId"></span>. </h2>
-    <h3>Start the game from the link below.</h3>
+    <h2>Waiting for players to join game <span class="gameId"></span></h2>
       <div id="qrcode"></div>
     <br />
+    <h3>Join by scanning qr code or by visiting the site and manually entering the  game id</h3>
     <div id="publicPlayersJoining"><div class="players_w"></div><div class="players_b"></div></div>
-    <a href="javascript:void(0);" onclick="startGame()">Start Game!!</a>
+
+    <h3>    <a href="javascript:void(0);" onclick="startGameRequest()">Start the Game!!</a>  </h3>
+
   </div> 
   
   <!-- Public: Game screen -->
@@ -84,6 +90,9 @@
       <span class="game_ended" style="display:none">Geme over! <span class="game_end_reason"></span></span>
     </div>
     <div id="publicPlayers"><div class="players_w"></div><div class="players_b"></div></div>
+    Scan to join a new player:
+    <div id="qrcode2"></div>
+    <a href="#" id="refreshPublicLink">Out of sync? click to refresh</a>
   </div>
 
 
