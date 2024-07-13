@@ -74,6 +74,14 @@ socket.on('createGame', function(gameId) {
     $('#publicMainLobby').hide();
     $('#publicWaitForStart').show();
     $('.gameId').html(gameId);
+    new QRCode(document.getElementById("qrcode"), {
+      text: window.location + '#' + gameId,
+      width: 128,
+      height: 128,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
 });
 socket.on('joinGame', function(players) {
   if (players === 'notfound') {
@@ -87,6 +95,7 @@ socket.on('joinGame', function(players) {
     showJoinedPlayer(pl);
   }
   gameId = msg;
+  $('.gameId').html(gameId);
 });
 socket.on('youAre', function(msg) {
   player = msg;
@@ -172,3 +181,12 @@ socket.on("connect", () => {
 });
 
 
+/**********************************
+     init
+***********************************/
+
+if (window.location.hash) {
+  $('#publicMainLobby').hide();
+  $('#privateJoinGame').show();
+  $('#join_game_id').val(window.location.hash.replace('#',''))
+}
