@@ -30,7 +30,10 @@
 
   <!-- Private: Join a game -->
   <div id="privateJoinGame" style="display:none">
-    My name is <input id="join_player_name" /> I want to join game  <input id="join_game_id" /> <a href="javascript:void(0)" onclick="joinGameRequest()">Lets Go!</a>
+    <h3>My name is <input id="join_player_name" /></h3>
+    <h3>I want to join game  <input id="join_game_id" /></h3>
+    You will be a ssigned to a random group.
+    <h3><a href="javascript:void(0)" onclick="joinGameRequest()">Lets Go!</a></h3>
     <br/>
     <span id="privateJoinGameNotFound" style="display: none;">Game id not found</span>
   </div>
@@ -98,8 +101,8 @@
 
   <!-- debugging: show WS chatter -->
 <hr/>
-  <a href="javascript:void(0)" onclick="$('#debugger').toggle()">Toggle ws debugger</a>
-  <div id="debugger">
+  <a href="javascript:void(0)" onclick="$('#debugger').toggle()">Toggle debugger</a>
+  <div id="debugger" style="display: none;">
 
 </div>
 
