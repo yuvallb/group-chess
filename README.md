@@ -1,5 +1,7 @@
 # Group Chess game
 
+https://group-chess.live/
+
 Play chess as a group, the move selected will be determined by a majority.
 
 
